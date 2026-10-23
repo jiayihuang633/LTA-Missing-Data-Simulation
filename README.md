@@ -2,7 +2,7 @@
 
 Monte Carlo simulation study of missing-data methods for parameter recovery in latent transition analysis (LTA).
 
-This repository contains the simulation, model-fitting, result-processing, and visualization code for a study comparing **full-information maximum likelihood (FIML)**, **multiple imputation (MI)**, and **single stochastic imputation (SI)** under different longitudinal study designs and missing-data conditions.
+This repository contains the simulation, model-fitting, result-processing, and visualization code for a research project comparing **full-information maximum likelihood (FIML)**, **multiple imputation (MI)**, and **single stochastic imputation (SI)** under different longitudinal study designs and missing-data conditions.
 
 ## Project Overview
 
@@ -37,7 +37,7 @@ LTA models are estimated using the `LMest` R package.
 | Sample size (`n`) | 100, 200, 500, 1000 |
 | Measurement occasions (`T`) | 3, 5, 10 |
 | Indicators per occasion (`p`) | 1, 5, 10 |
-| Missing-data mechanisms | None, MCAR, MAR |
+| Missing-data mechanisms | None, MCAR, MAR-style |
 | Missing-data rates | 0%, 10%, 20%, 40% |
 | Replications per condition | 100 |
 
@@ -53,10 +53,16 @@ $$
 \begin{pmatrix}
 0.80 & 0.20 \\
 0.25 & 0.75
-\end{pmatrix}
+\end{pmatrix}.
 $$
 
-Binary item-response probabilities are centered around 0.80 for Class 1 and 0.30 for Class 2. The data-generation code adds indicator-specific random jitter around these values to avoid making all indicators perfectly identical within a latent class.
+Binary item-response probabilities are centered around 0.80 for Class 1 and 0.30 for Class 2. The data-generation code adds indicator-specific random jitter around these values so that the indicators are not perfectly identical within each latent class.
+
+## Missing-Data Mechanisms
+
+Under MCAR, missingness is introduced independently of the indicator responses at measurement occasions after the baseline occasion.
+
+The simulated MAR-style mechanism uses the previous-time response from the generated complete data to determine the probability of missingness at the subsequent occasion. When that lagged response would itself be unobserved in the observed dataset, this construction is not a strict observed-data MAR mechanism. It is used here as a simplified simulation mechanism for studying missingness related to prior responses.
 
 ## Repository Structure
 
@@ -97,6 +103,9 @@ LTA-Missing-Data-Simulation/
 │   ├── summary_by_method_parameter.csv
 │   └── summary_by_missing_rate.csv
 │
+├── report/
+│   └── LTA_Missing_Data_Research_Report.pdf
+│
 ├── .gitignore
 └── README.md
 ```
@@ -111,9 +120,9 @@ The scripts are numbered in the order of the analysis workflow.
 
 `00_simulate_data.R`
 
-Generates the longitudinal latent-class trajectories and binary indicator responses across all simulation conditions, applies the specified missing-data mechanism, and saves individual simulation replications in condition-specific folders.
+Generates longitudinal latent-class trajectories and binary indicator responses across all simulation conditions, applies the specified missing-data mechanism, and saves individual simulation replications in condition-specific folders.
 
-Generated simulation datasets are not stored in this repository because they can be reproduced from the data-generation script.
+The full set of generated simulation datasets is not stored in this repository because it can be reproduced from the data-generation script.
 
 ### 2. Fit the LTA models
 
@@ -123,19 +132,19 @@ Fits the two-class LTA model to the incomplete simulated datasets using FIML.
 
 `02_fit_mi.R`
 
-Uses multiple imputation with logistic regression for the binary indicators and fits the LTA model to each imputed dataset.
+Uses multiple imputation with logistic regression for the binary indicators and fits the LTA model to the imputed datasets.
 
 `03_fit_si.R`
 
 Performs a single stochastic imputation and fits the same LTA model to the resulting completed dataset.
 
-The model-fitting scripts also address latent-class label switching before parameter estimates are compared across replications.
-
 ### 3. Combine simulation outputs
 
 `04_combine_results.R`
 
-Combines the individual model-fitting results for FIML, MI, and SI into:
+Combines the individual model-fitting results for FIML, MI, and SI. Before parameter estimates are combined across replications, latent-class labels are aligned to maintain consistent class interpretation.
+
+The script produces:
 
 ```text
 results/all_results_FIML.rds
@@ -159,10 +168,9 @@ The combined files contain estimates of:
 
 Calculates replication-level relative bias,
 
-$$
-RB_r(\theta) =
-\frac{\hat{\theta}_r - \theta}{\theta},
-$$
+```math
+RB_r(\theta)=\frac{\hat{\theta}_r-\theta}{\theta}
+```
 
 and then computes the mean relative bias within each simulation condition.
 
@@ -176,7 +184,7 @@ the absolute value of the condition-specific mean relative bias.
 
 This script also:
 
-- checks the number of successful simulation results per condition,
+- checks the number of simulation results available for each condition,
 - produces MAR-only parameter-recovery figures,
 - produces MAR-versus-MCAR comparisons,
 - produces the no-missingness baseline figure, and
@@ -204,9 +212,9 @@ The no-missingness baseline provides a reference for parameter recovery before m
 
 A separate figure compares MAR and MCAR for the representative item-response parameter. Results for additional parameters are provided in the supplementary figure folder.
 
-## R Packages
+## Software
 
-The analysis uses the following R packages:
+The analysis uses R and the following packages:
 
 - `LMest`
 - `mice`
@@ -230,7 +238,7 @@ Run the scripts from the repository root in numerical order:
 06_summarize_results.R
 ```
 
-The model-fitting scripts operate on the condition-specific simulation folders produced by `00_simulate_data.R`. Depending on the computing environment, these scripts can be run sequentially, in batches, or across condition folders in parallel.
+The model-fitting scripts operate on the condition-specific simulation datasets generated by `00_simulate_data.R`.
 
 Because the full Monte Carlo design contains many simulation conditions and 100 replications per condition, reproducing the complete study may require substantial computation time.
 
@@ -243,7 +251,7 @@ This repository accompanies the research report:
 Jiayi Huang and Chad A. Davis  
 University of Virginia
 
-The full research report is available in the `report/` folder. 
+The full research report is available in the [`report/`](report/) folder. The report summarizes the simulation design, results, and implications of the study and may also be used as a graduate-school writing sample.
 
 ## Authors
 
@@ -255,4 +263,4 @@ University of Virginia
 
 ## Notes
 
-This repository is intended to document the simulation and analysis workflow used in the study. Generated raw simulation files and intermediate model-fitting objects are not included when they can be reproduced from the supplied code.
+This repository is intended to document the simulation and analysis workflow used in the study. Generated raw simulation files and other large intermediate objects are omitted when they can be reproduced from the supplied code.
