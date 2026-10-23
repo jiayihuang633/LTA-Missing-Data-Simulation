@@ -43,18 +43,18 @@ LTA models are estimated using the `LMest` R package.
 
 The initial latent-class probabilities are
 
-\[
-P(C_1=1)=0.50,\qquad P(C_1=2)=0.50.
-\]
+$$
+P(C_1 = 1) = 0.50, \qquad P(C_1 = 2) = 0.50.
+$$
 
 The transition matrix used in the simulation is
 
-\[
+$$
 \begin{pmatrix}
-0.80 & 0.20\\
+0.80 & 0.20 \\
 0.25 & 0.75
-\end{pmatrix}.
-\]
+\end{pmatrix}
+$$
 
 Binary item-response probabilities are centered around 0.80 for Class 1 and 0.30 for Class 2. The data-generation code adds indicator-specific random jitter around these values to avoid making all indicators perfectly identical within a latent class.
 
@@ -159,17 +159,18 @@ The combined files contain estimates of:
 
 Calculates replication-level relative bias,
 
-\[
-RB_r(\theta)=\frac{\hat{\theta}_r-\theta}{\theta},
-\]
+$$
+RB_r(\theta) =
+\frac{\hat{\theta}_r - \theta}{\theta},
+$$
 
 and then computes the mean relative bias within each simulation condition.
 
 Figures use
 
-\[
+$$
 \left|\overline{RB}\right|,
-\]
+$$
 
 the absolute value of the condition-specific mean relative bias.
 
